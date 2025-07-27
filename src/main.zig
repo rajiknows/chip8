@@ -1,5 +1,5 @@
 const std = @import("std");
-const rl = @import("raylib");
+// const rl = @import("raylib");
 const CHIP8 = @import("chip8.zig");
 
 const screenWidth = 800;
@@ -7,77 +7,6 @@ const screenHeight = 600;
 const SCALE = 16;
 
 var cpu: CHIP8 = undefined;
-
-pub fn init() !void {
-    rl.initWindow(screenWidth, screenHeight, "CHIP-8 Emulator");
-    defer rl.closeWindow();
-
-    rl.setTargetFPS(60);
-
-    cpu.init();
-
-    // Initialize CHIP-8 CPU
-    // cpu.init();
-
-    // Main game loop
-    while (!rl.windowShouldClose()) {
-        // Handle input
-        handleInput();
-
-        // Run CPU cycle
-        cpu.cycle();
-
-        // Draw
-        rl.beginDrawing();
-        defer rl.endDrawing();
-
-        rl.clearBackground(rl.Color.black);
-
-        // Draw CHIP-8 display
-        drawDisplay();
-
-        // Draw info text
-        // rl.drawText("CHIP-8 Emulator", 10, 10, 20, rl.Color.white);
-        // rl.drawText("Press ESC to exit", 10, 35, 16, rl.Color.gray);
-    }
-}
-// ok  so this is how the display is stored , it is stored in a array right
-//
-// display = [0,0,0,0,0,0,0.........]
-//
-// but to represent the screen we will imagine it to be like this
-//
-// display = [0,0,0,0.... SCREEN_WIDTH
-//            0,0,0,0......
-//            0
-//            0
-//            .
-//            .
-//            .
-//            .
-//            SCREEN_HEIGHT
-//           ]
-
-pub fn drawDisplay() void {
-    for (0..CHIP8.DISPLAY_HEIGHT) |y| {
-        for (0..CHIP8.DISPLAY_WIDTH) |x| {
-            const pixel = cpu.display[y * CHIP8.DISPLAY_WIDTH + x];
-            if (pixel == 1) {
-                const rect = rl.Rectangle{
-                    .x = @floatFromInt(x * SCALE),
-                    .y = @floatFromInt(y * SCALE),
-                    .width = SCALE,
-                    .height = SCALE,
-                };
-                rl.drawRectangleRec(rect, rl.Color.white);
-            }
-        }
-    }
-}
-
-pub fn deinit() void {
-    rl.closeWindow();
-}
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -153,8 +82,6 @@ pub fn main() !void {
         };
         cpu.loadRom(&simple_game);
     }
-
-    try init();
 }
 
 fn loadRom(allocator: std.mem.Allocator, path: []const u8) !void {
@@ -165,40 +92,31 @@ fn loadRom(allocator: std.mem.Allocator, path: []const u8) !void {
     defer file.close();
 
     const file_size = try file.getEndPos();
-    const rom_data = try allocator.alloc(u8, file_size);
+    const file_size_usize: usize = @intCast(file_size);
+    const rom_data = try allocator.alloc(u8, file_size_usize);
     defer allocator.free(rom_data);
 
     _ = try file.readAll(rom_data);
     cpu.loadRom(rom_data);
 }
 
-fn handleInput() void {
-    // CHIP-8 keypad mapping:
-    // 1 2 3 C    ->    1 2 3 4
-    // 4 5 6 D    ->    Q W E R
-    // 7 8 9 E    ->    A S D F
-    // A 0 B F    ->    Z X C V
+export fn init() void {
+    cpu.init();
+}
 
-    const key_mapping = [_]struct { raylib_key: rl.KeyboardKey, chip8_key: u8 }{
-        .{ .raylib_key = rl.KeyboardKey.one, .chip8_key = 0x1 },
-        .{ .raylib_key = rl.KeyboardKey.two, .chip8_key = 0x2 },
-        .{ .raylib_key = rl.KeyboardKey.three, .chip8_key = 0x3 },
-        .{ .raylib_key = rl.KeyboardKey.four, .chip8_key = 0xC },
-        .{ .raylib_key = rl.KeyboardKey.q, .chip8_key = 0x4 },
-        .{ .raylib_key = rl.KeyboardKey.w, .chip8_key = 0x5 },
-        .{ .raylib_key = rl.KeyboardKey.e, .chip8_key = 0x6 },
-        .{ .raylib_key = rl.KeyboardKey.r, .chip8_key = 0xD },
-        .{ .raylib_key = rl.KeyboardKey.a, .chip8_key = 0x7 },
-        .{ .raylib_key = rl.KeyboardKey.s, .chip8_key = 0x8 },
-        .{ .raylib_key = rl.KeyboardKey.d, .chip8_key = 0x9 },
-        .{ .raylib_key = rl.KeyboardKey.f, .chip8_key = 0xE },
-        .{ .raylib_key = rl.KeyboardKey.z, .chip8_key = 0xA },
-        .{ .raylib_key = rl.KeyboardKey.x, .chip8_key = 0x0 },
-        .{ .raylib_key = rl.KeyboardKey.c, .chip8_key = 0xB },
-        .{ .raylib_key = rl.KeyboardKey.v, .chip8_key = 0xF },
-    };
-    for (key_mapping) |mapping| {
-        const pressed = rl.isKeyDown(mapping.raylib_key);
-        cpu.setKey(mapping.chip8_key, pressed);
-    }
+export fn cycle() void {
+    cpu.cycle();
+}
+
+export fn load_rom(ptr: [*]const u8, len: usize) void {
+    const rom = ptr[0..len];
+    cpu.loadRom(rom);
+}
+
+export fn getDisplayBuffer() [*]const u8 {
+    return &cpu.display;
+}
+
+export fn set_key(key: u8, pressed: bool) void {
+    cpu.setKey(key, pressed);
 }
