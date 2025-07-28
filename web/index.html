@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        />
+        <title>CHIP-8 Emulator</title>
+        <style>
+            body {
+                margin: 0;
+                background: #000;
+                color: white;
+                font-family: sans-serif;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100vh;
+                touch-action: none;
+            }
+
+            canvas {
+                image-rendering: pixelated;
+                width: 100vw;
+                max-width: 640px;
+                aspect-ratio: 2 / 1;
+                background: #111;
+            }
+
+            .buttons {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 6px;
+                margin-top: 10px;
+                max-width: 640px;
+                width: 100vw;
+                padding: 10px;
+            }
+
+            button {
+                font-size: 1.2rem;
+                background: #222;
+                color: white;
+                border: 1px solid #444;
+                padding: 10px;
+                border-radius: 6px;
+                touch-action: manipulation;
+            }
+
+            button:active {
+                background: #555;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas id="screen" width="64" height="32"></canvas>
+
+        <div class="buttons">
+            <button data-key="1">1</button>
+            <button data-key="2">2</button>
+            <button data-key="3">3</button>
+            <button data-key="C">C</button>
+
+            <button data-key="4">4</button>
+            <button data-key="5">5</button>
+            <button data-key="6">6</button>
+            <button data-key="D">D</button>
+
+            <button data-key="7">7</button>
+            <button data-key="8">8</button>
+            <button data-key="9">9</button>
+            <button data-key="E">E</button>
+
+            <button data-key="A">A</button>
+            <button data-key="0">0</button>
+            <button data-key="B">B</button>
+            <button data-key="F">F</button>
+        </div>
+
+        <script type="module" src="main.js"></script>
+    </body>
+</html>
