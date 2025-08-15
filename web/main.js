@@ -85,9 +85,14 @@ class CHIP8Emulator {
       if (missingFunctions.length > 0) {
         console.error("Missing WASM functions:", missingFunctions);
         alert(
-          `WASM compilation issue detected!\n\nMissing functions: ${missingFunctions.join(", ")
-          }\n\nOnly found exports: ${Object.keys(this.wasm).join(", ")
-          }\n\nPlease check your Zig compilation. You might need to:\n1. Use 'export' keyword properly\n2. Check your build.zig file\n3. Ensure you're targeting WASM correctly`,
+          `WASM compilation issue detected!\n\nMissing functions: ${
+            missingFunctions.join(", ")
+          }\n\nOnly found exports: ${
+            Object.keys(this.wasm).join(", ")
+          }\n\nPlease check your Zig compilation. You might need to:\n
+1. Use 'export' keyword properly\n
+2. Check your build.zig file\n
+3. Ensure you're targeting WASM correctly`,
         );
         return;
       }
@@ -251,11 +256,11 @@ class CHIP8Emulator {
     // Add instruction text
     const instructions = document.createElement("div");
     instructions.innerHTML = `
-            <div style="position: absolute; top: 10px; left: 10px; font-size: 0.9rem; color: #ccc;">
-                <div>Keyboard: 1234 QWER ASDF ZXCV</div>
-                <div>Load a CHIP-8 ROM file to start playing</div>
-            </div>
-        `;
+<div style="position: absolute; top: 10px; left: 10px; font-size: 0.9rem; color: #ccc;">
+  <div>Keyboard: 1234 QWER ASDF ZXCV</div>
+  <div>Load a CHIP-8 ROM file to start playing</div>
+</div>
+`;
     document.body.appendChild(instructions);
   }
 

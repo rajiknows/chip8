@@ -105,22 +105,21 @@ pub const CHIP8 = struct {
             0x7000 => self.registers[x] = @intCast((@as(u16, self.registers[x]) + nn) & 0xFF),
             0x8000 => {
                 switch (self.opcode) {
-                    0x8001 => self.registers[x] = self.registers[y],
+                    0x8000 => self.registers[x] = self.registers[y],
                     0x8001 => self.registers[x] = self.registers[x] | self.registers[y],
                     0x8002 => self.registers[x] = self.registers[x] & self.registers[y],
                     0x8003 => self.registers[x] = self.registers[x] ^ self.registers[y],
                     0x8004 => self.registers[x] = self.registers[x] + self.registers[y],
                     0x8005 => self.registers[x] = self.registers[x] - self.registers[y],
                     0x8007 => self.registers[x] = self.registers[y] - self.registers[x],
+                    else => {},
                 }
             },
             0xA000 => self.index = nnn,
             0xC000 => {
                 // generate a random number
-                var prng = std.rand.DefaultPrng.init(@intCast(u64, std.time.nanoTimestamp()));
-                const random = prng.random();
-                const value = random.intRange(u32, 0, nn);
-                self.registers[x] = value & self.registers[nn];
+                const val = get_random_u8();
+                self.registers[x] = val & self.registers[nn];
             },
             0xD000 => self.drawSprite(@intCast(x), @intCast(y), @intCast(n)),
             0xf000 => {
@@ -128,6 +127,7 @@ pub const CHIP8 = struct {
                     0xF007 => self.registers[x] = self.delay_timer,
                     0xF015 => self.delay_timer = self.registers[x],
                     0xF018 => self.registers[x] = self.sound_timer,
+                    else => {},
                 }
             },
             else => {},
@@ -158,3 +158,20 @@ pub const CHIP8 = struct {
         if (key < 16) self.keypad[key] = if (pressed) 1 else 0;
     }
 };
+// 1. Create a global variable to hold our PRNG.
+// It's an optional so we can initialize it later.
+var global_prng: ?std.Random.DefaultPrng = null;
+
+// 2. Export a function to be called from JavaScript to seed the generator.
+pub export fn seed_rng(seed: u64) void {
+    global_prng = std.Random.DefaultPrng.init(seed);
+}
+
+// 3. Your random function now uses the global generator.
+// It is no longer failable, so it returns a plain u8.
+pub fn get_random_u8() u8 {
+    // We use expect here because the logic of our program should ensure
+    // that seed_rng() is called before this function is ever used.
+    const random = global_prng.?.random();
+    return random.int(u8);
+}
